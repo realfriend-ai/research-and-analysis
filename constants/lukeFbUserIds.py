@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-luke_fb_users = ['5d99c657f4789a0017ecabf2', '5d5e17ae22c8ee003473df3f', '5d138e2115198a001779a43c',
+luke_fb_user_ids = ['5d99c657f4789a0017ecabf2', '5d5e17ae22c8ee003473df3f', '5d138e2115198a001779a43c',
                  '5c76704525a2500016303f49', '5ec3b503510131bdf32b8a85', '5ec27d9a4055061fddbf7c9e',
                  '5de7d1f3ee04d0003971d8ff', '5e0dc9fde67a9000173ae1d8', '5cb5e62accca7200172b0cbc',
                  '5bed83ec04274e0013b8c005', '608771ae2613c3e7df89115a', '600ba1ba161f2232d9055ad1',
@@ -11,4 +11,4 @@ luke_fb_users = ['5d99c657f4789a0017ecabf2', '5d5e17ae22c8ee003473df3f', '5d138e
                  '5ce65b960572220017680733', '5c489564b28eac0016ec832e', '5de0074ea12cab0034cad4f6',
                  '5cc86477146c7600179fa577', '5ca26a81d6d7ae00171c28e8', '5cd348d6206f3a0017ee99b8']
 
-luke_fb_users = list(map(lambda x: ObjectId(x), luke_fb_users))
+luke_fb_user_ids = list(map(lambda x: ObjectId(x), luke_fb_user_ids))
