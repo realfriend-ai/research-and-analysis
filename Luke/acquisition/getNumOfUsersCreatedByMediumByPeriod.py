@@ -25,6 +25,7 @@ def get_number_of_users_created_by_medium_and_date(start, end, only_user_did_pw)
     groups_ids_we_should_ignore = find_groups_with_user_created_between_date_and_user_member_before(start, end)
     query = {
         'isAgent': {'$ne': True},
+        'tags': {'$ne': 'ADMIN'},
         'requestsKind': 'APT_SALE',
         '_id': {'$nin': luke_fb_user_ids + groups_ids_we_should_ignore},
         'createdAt': {'$gte': start, '$lte': end},
@@ -32,8 +33,8 @@ def get_number_of_users_created_by_medium_and_date(start, end, only_user_did_pw)
     projection = {'_id': 1, 'createdAt': 1, 'mediums': 1, 'requestsKind': 1, 'initialRequest': 1}
     if only_user_did_pw:
         query.update({'lastPageViewAt': {'$exists': True}})
-    list1 = list(fb_users_collection.find(query, projection))
-    fbUserDf = pd.DataFrame(list1)
+    fbUsersList = list(fb_users_collection.find(query, projection))
+    fbUserDf = pd.DataFrame(fbUsersList)
     fbUserDf['preferredMedium'] = fbUserDf['mediums'].apply(lambda x: get_preferred_medium_by_user_cleaning_groups(x))
     print(fbUserDf['preferredMedium'].value_counts())
     return fbUserDf
