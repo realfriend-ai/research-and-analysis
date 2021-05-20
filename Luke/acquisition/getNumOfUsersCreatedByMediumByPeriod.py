@@ -46,6 +46,7 @@ def get_users_created_by_medium_and_date(start, end, only_user_did_pw):
         query.update({'lastPageViewAt': {'$exists': True}})
     fbUsersList = list(fb_users_collection.find(query, projection))
     fbUserDf = pd.DataFrame(fbUsersList)
+    fbUserDf.dropna(subset=['mediums'], inplace=True)
     fbUserDf.rename(columns={'_id': 'fbUserId'}, inplace=True)
     fbUserDf = remove_fb_user_we_should_ignore_on_counting(start, end, fbUserDf)
     fbUserDf['preferredMedium'] = fbUserDf['mediums'].apply(lambda x: get_preferred_medium_by_user_cleaning_groups(x))
@@ -53,4 +54,3 @@ def get_users_created_by_medium_and_date(start, end, only_user_did_pw):
     return fbUserDf
 
 
-get_users_created_by_medium_and_date(first_of_apr_21, first_of_may_21, False)

@@ -1,5 +1,5 @@
 import pandas as pd
-
+from datetime import datetime
 from Luke.acquisition.getNumOfUsersCreatedByMediumByPeriod import get_users_created_by_medium_and_date
 from constants.mongoConnectLuke import property_requests_collection
 
@@ -29,7 +29,9 @@ def get_median_sale_price(mediumUserDf: pd.DataFrame):
     property_req_df = pd.DataFrame(propertyRequestsList)
     property_req_df['max_salePrice'] = property_req_df['salePrice'].apply(
         lambda x: get_max_sale_price(x))
+    property_req_df.sort_values(by='createdAt', ascending=False, ignore_index=True, inplace=True)
     property_req_df.dropna(subset=['max_salePrice'], inplace=True)
+    property_req_df.drop_duplicates(subset=['fbUserId'], inplace=True, keep='first')
     print(f'Max sale Price stats: {property_req_df["max_salePrice"].describe()}')
     merged_df = pd.merge(mediumUserDf, property_req_df[['max_salePrice', 'fbUserId']], how='inner',
                          left_on='fbUserId',
@@ -51,6 +53,8 @@ def get_median_sale_price_per_medium(start, end):
     for medium in mediums:
         medium_users_df = users_created_by_dates[users_created_by_dates['preferredMedium'] == medium]
         print(f'Medium sale price stats: {medium}')
-        get_median_sale_price(medium_users_df)
+        df = get_median_sale_price(medium_users_df)
+        df.to_clipboard()
 
 
+get_median_sale_price_per_medium(start=datetime(2021, 5, 1), end=datetime.now())
