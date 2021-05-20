@@ -93,6 +93,14 @@ def get_origin_fb_users(user_list):
 
 
 def get_sent_lead_for_app_users(start, end):
+    """Summary: get lead sent stats of users between dates in specific medium
+    we did it by the date a group with agent has been created
+
+    Parameters:
+         start (date): the beginning date -  we want to find user created after
+         end (date): the final date - we want to find users created before
+
+    """
     groups_df = groups_created_between_dates(start, end)
     groups_df['hasAgentInMembers'] = groups_df['members'].apply(lambda x: is_agent_in_members(x))
     leads_df = groups_df[groups_df['hasAgentInMembers']]
@@ -101,7 +109,6 @@ def get_sent_lead_for_app_users(start, end):
     app_user_df = get_origin_fb_users(leads_df['fbUserId'].tolist())
     send_lead_by_day_df = get_lead_per_day_in_service(app_user_df, leads_df)
     only_first_lead_df = get_first_sent_lead_per_user(send_lead_by_day_df)
-    print(only_first_lead_df['dayOfLeadSent'].describe(percentiles=[.1, .2, .3, .4, .5, .6, .7, .8, .9]))
     return only_first_lead_df
 
 
