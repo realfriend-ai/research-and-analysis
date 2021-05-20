@@ -3,10 +3,11 @@ from datetime import datetime
 import pandas as pd
 
 from Luke.acquisition.getGroupesToIgnore import groups_created_between_dates
-from Luke.acquisition.getNumOfUsersCreatedByMediumByPeriod import get_users_created_by_medium_and_date
+from Luke.acquisition.getNumOfUsersCreatedByMediumByPeriod import get_users_created_by_medium_and_date, \
+    get_preferred_medium_by_user_cleaning_groups
 from Luke.acquisition.mergeGroupAndFbUserForActions import map_group_id_id_to_his_origin_fb_user_id
 from constants.importantDates import first_of_nov
-from constants.mongoConnectLuke import feed_item_event_collection
+from constants.mongoConnectLuke import feed_item_event_collection, fb_users_collection
 
 
 def get_lead_sent_from_users(buyer_user_list):
@@ -60,5 +61,48 @@ def get_sent_lead_stats_by_date_and_medium(start, end, medium):
     return only_first_lead_df
 
 
-imsg_engagement = get_sent_lead_stats_by_date_and_medium(start=first_of_nov, end=datetime.now(), medium='imessage')
-app_engagement = get_sent_lead_stats_by_date_and_medium(start=first_of_nov, end=datetime.now(), medium='app')
+# imsg_engagement = get_sent_lead_stats_by_date_and_medium(start=first_of_nov, end=datetime.now(), medium='imessage')
+
+
+def is_agent_in_members(member_list):
+    for member in member_list:
+        if member.get('role') == 'AGENT':
+            return True
+    return False
+
+
+def get_origin_fb_user_id(member_list):
+    for member in member_list:
+        if member.get('role') == 'ADMIN':
+            return member.get('fbUserId')
+
+
+def get_origin_fb_users(user_list):
+    query = {
+        'requestsKind': 'APT_SALE',
+        '_id': {'$in': user_list},
+    }
+    projection = {'_id': 1, 'createdAt': 1, 'mediums': 1, 'requestsKind': 1, 'initialRequest': 1}
+    fbUsersList = list(fb_users_collection.find(query, projection))
+    fbUserDf = pd.DataFrame(fbUsersList)
+    fbUserDf.rename(columns={'createdAt': 'userCreatedAt', '_id': 'fbUserId'}, inplace=True)
+    fbUserDf.dropna(subset=['mediums'], inplace=True)
+    fbUserDf['preferredMedium'] = fbUserDf['mediums'].apply(lambda x: get_preferred_medium_by_user_cleaning_groups(x))
+    fbUserDf = fbUserDf[fbUserDf['preferredMedium'] == 'app']
+    return fbUserDf
+
+
+def get_sent_lead_for_app_users(start, end):
+    groups_df = groups_created_between_dates(start, end)
+    groups_df['hasAgentInMembers'] = groups_df['members'].apply(lambda x: is_agent_in_members(x))
+    leads_df = groups_df[groups_df['hasAgentInMembers']]
+    leads_df.rename(columns={'createdAt': 'lead_send_at', 'fbUserId': 'groupFbUserId'}, inplace=True)
+    leads_df['fbUserId'] = leads_df['members'].apply(lambda x: get_origin_fb_user_id(x))
+    app_user_df = get_origin_fb_users(leads_df['fbUserId'].tolist())
+    send_lead_by_day_df = get_lead_per_day_in_service(app_user_df, leads_df)
+    only_first_lead_df = get_first_sent_lead_per_user(send_lead_by_day_df)
+    print(only_first_lead_df['dayOfLeadSent'].describe(percentiles=[.1, .2, .3, .4, .5, .6, .7, .8, .9]))
+    return only_first_lead_df
+
+
+get_sent_lead_for_app_users(start=first_of_nov, end=datetime.now())

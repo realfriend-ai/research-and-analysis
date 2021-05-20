@@ -23,7 +23,7 @@ def groups_created_between_dates(start, end):
     groupsList = list(group_chat_collection.find(
         {
             'createdAt': {'$gte': start, '$lte': end},
-        }, {'_id': 1, 'fbUserId': 1, 'members': 1}
+        }, {'_id': 1, 'fbUserId': 1, 'members': 1, 'createdAt': 1}
     ))
     groups_df = pd.DataFrame(groupsList)
     groups_df['membersFbUserIds'] = groups_df['members'].apply(lambda x: get_admin_group_members_fb_user_ids(x))
