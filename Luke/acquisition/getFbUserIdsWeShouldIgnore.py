@@ -1,7 +1,5 @@
 import pandas as pd
 
-from Luke.acquisition.getGroupesToIgnore import groups_created_between_dates
-
 
 def find_member_in_user_list(fb_user_list, members):
     for member in members:
@@ -10,7 +8,7 @@ def find_member_in_user_list(fb_user_list, members):
     return False
 
 
-def get_user_we_should_ignore(groups_df, fb_users_df):
+def get_user_we_should_ignore_when_counting(groups_df, fb_users_df):
     """Summary: this function preventing us counting twice user and their groups
      created in the same period
 
@@ -27,7 +25,3 @@ def get_user_we_should_ignore(groups_df, fb_users_df):
     groups_df.rename(columns={'createdAt': 'groupCreatedAt', 'fbUserId': 'groupFbUeserId'}, inplace=True)
     duplicates_df = pd.merge(fb_users_df, groups_df, how='inner', left_on='fbUserId', right_on='memberInUserList')
     return duplicates_df['fbUserId'].tolist()
-
-
-
-
