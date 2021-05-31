@@ -1,6 +1,10 @@
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
+
 from Luke.acquisition.getNumOfUsersCreatedByMediumByPeriod import get_users_created_by_medium_and_date
+from Luke.acquisition.removeGroupsWithMembersInDIfferentInitalMedium import \
+    get_fbUser_df_without_groups_with_member_in_different_medium
 from constants.mongoConnectLuke import property_requests_collection
 
 
@@ -47,11 +51,12 @@ def get_median_sale_price_per_medium(start, end):
              end (date): the final date - we want to find users created before
 
      """
-    users_created_by_dates = get_users_created_by_medium_and_date(start, end, only_user_did_pw=True)
+    users_created_by_dates = get_users_created_by_medium_and_date(start, end, only_user_did_pw=True, for_action=False)
     users_created_by_dates.rename(columns={'_id': 'fbUserId'}, inplace=True)
     mediums = ['app', 'imessage', 'phone']
     for medium in mediums:
         medium_users_df = users_created_by_dates[users_created_by_dates['preferredMedium'] == medium]
+        medium_users_df = get_fbUser_df_without_groups_with_member_in_different_medium(medium_users_df, start, end, medium)
         print(f'Medium sale price stats: {medium}')
         df = get_median_sale_price(medium_users_df)
         df.to_clipboard()

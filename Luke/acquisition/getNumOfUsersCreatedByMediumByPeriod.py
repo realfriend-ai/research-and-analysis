@@ -41,7 +41,7 @@ def get_users_created_by_medium_and_date(start, end, only_user_did_pw, for_actio
         '_id': {'$nin': luke_fb_user_ids + groups_ids_we_should_ignore},
         'createdAt': {'$gte': start, '$lte': end},
     }
-    projection = {'_id': 1, 'createdAt': 1, 'mediums': 1, 'requestsKind': 1, 'initialRequest': 1}
+    projection = {'_id': 1, 'createdAt': 1, 'mediums': 1, 'requestsKind': 1, 'initialRequest': 1, 'tags': 1}
     if only_user_did_pw:
         query.update({'lastPageViewAt': {'$exists': True}})
     fbUsersList = list(fb_users_collection.find(query, projection))
@@ -52,4 +52,8 @@ def get_users_created_by_medium_and_date(start, end, only_user_did_pw, for_actio
         fbUserDf = remove_fb_user_we_should_ignore_on_counting(start, end, fbUserDf)
     fbUserDf['preferredMedium'] = fbUserDf['mediums'].apply(lambda x: get_preferred_medium_by_user_cleaning_groups(x))
     print(fbUserDf['preferredMedium'].value_counts())
+    fbUserDf.to_clipboard()
     return fbUserDf
+
+
+# get_users_created_by_medium_and_date(datetime(2021, 5, 1), datetime.now(), True, False)
