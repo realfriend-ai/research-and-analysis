@@ -1,6 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 # 2021
+first_of_jun_21 = datetime(2021, 6, 1)
 first_of_may_21 = datetime(2021, 5, 1)
 first_of_apr_21 = datetime(2021, 4, 1)
 first_of_mar_21 = datetime(2021, 3, 1)

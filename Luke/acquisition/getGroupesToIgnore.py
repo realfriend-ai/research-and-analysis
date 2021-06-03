@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 
 from constants.lukeFbUserIds import luke_fb_user_ids
@@ -52,10 +54,12 @@ def find_groups_with_user_created_between_date_and_user_member_before(start, end
     groups_df = groups_created_between_dates(start, end)
     members_ids = groups_df['membersFbUserIds'].tolist()
     members_ids_flatten = [i for member in members_ids for i in member]
-    fb_user_ids_created_before_start_date = get_fb_users_who_created_before_start_date_from_ids_list(members_ids_flatten, start)
-    groups_df['shouldBeIgnored'] = groups_df['membersFbUserIds'].apply(lambda x: is_member_in_list(fb_user_ids_created_before_start_date, x))
+    fb_user_ids_created_before_start_date = get_fb_users_who_created_before_start_date_from_ids_list(
+        members_ids_flatten, start)
+    groups_df['shouldBeIgnored'] = groups_df['membersFbUserIds'].apply(
+        lambda x: is_member_in_list(fb_user_ids_created_before_start_date, x))
     groups_df = groups_df[groups_df['shouldBeIgnored'] == True]
     return groups_df['fbUserId'].tolist()
 
 
-
+listOfUsers = find_groups_with_user_created_between_date_and_user_member_before(start=datetime(2021, 5, 1), end=datetime(2021, 5, 31))
