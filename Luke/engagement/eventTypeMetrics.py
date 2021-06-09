@@ -43,7 +43,7 @@ def get_events_num_per_days(events_df_by_day_in_service):
     return events_stats_by_day_df
 
 
-def get_event_stats_by_date_and_medium(start, end, event):
+def get_event_stats_by_date_and_medium(start, end, event, medium):
     """Summary: get engagement of users between dates in specific medium
 
     Parameters:
@@ -53,6 +53,7 @@ def get_event_stats_by_date_and_medium(start, end, event):
 
     """
     users_created_by_dates = get_users_created_by_medium_and_date(start, end, only_user_did_pw=True, for_action=True)
+    users_created_by_dates = users_created_by_dates[users_created_by_dates['preferredMedium'] == medium]
     users_created_by_dates.rename(columns={'_id': 'fbUserId', 'createdAt': 'userCreatedAt'}, inplace=True)
     events_df = get_event_from_users(buyer_user_list=users_created_by_dates['fbUserId'].tolist(),
                                      event=event)
@@ -60,6 +61,6 @@ def get_event_stats_by_date_and_medium(start, end, event):
     return events_df_by_day_in_service
 
 
-interested_df_by_day_in_service = get_event_stats_by_date_and_medium(start=first_of_apr_21, end=first_of_may_21,
-                                                                     event='FEED_ITEM_STATUS_INTERESTED')
-int_stats = get_events_num_per_days(interested_df_by_day_in_service)
+interested_df_by_day_in_service_app = get_event_stats_by_date_and_medium(start=first_of_apr_21, end=first_of_may_21,
+                                                                     event='FEED_ITEM_STATUS_INTERESTED', medium='imessage')
+int_stats = get_events_num_per_days(interested_df_by_day_in_service_app)

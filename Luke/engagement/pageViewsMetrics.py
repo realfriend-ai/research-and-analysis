@@ -5,11 +5,11 @@ from constants.importantDates import first_of_apr_21, first_of_may_21
 from constants.mongoConnectLuke import page_view_collection
 
 
-def get_page_views_from_users(buyer_user_list):
+def get_page_views_from_users(buyer_user_list, page_type):
     pageViewsList = list(page_view_collection.find(
         {
             'fbUserId': {'$in': buyer_user_list},
-            'pageName': 'PROPERTY_MORE_DETAILS',
+            'pageName': page_type
         }, {'createdAt': 1, 'fbUserId': 1, 'duration': 1}
     ))
     pageViewsDf = pd.DataFrame(pageViewsList)
@@ -34,7 +34,7 @@ def get_pw_metrics_per_day(day, pw_df_by_day_df):
             'medianPageViews': pw_df_by_day_df_grouped['count'].median()}
 
 
-def get_pw_stats_by_date_and_medium(start, end, medium):
+def get_pw_stats_by_date_and_medium(start, end, medium, page_type):
     """Summary: get engagement of users between dates in specific medium
 
     Parameters:
@@ -43,12 +43,16 @@ def get_pw_stats_by_date_and_medium(start, end, medium):
          medium (str): indicates which medium stats we would like
 
     """
-    users_created_by_dates = get_users_created_by_medium_and_date(start, end, only_user_did_pw=True)
+    users_created_by_dates = get_users_created_by_medium_and_date(start, end, only_user_did_pw=True, for_action=True)
     users_created_by_dates.rename(columns={'_id': 'fbUserId', 'createdAt': 'userCreatedAt'}, inplace=True)
     medium_users_df = users_created_by_dates[users_created_by_dates['preferredMedium'] == medium]
     user_list = medium_users_df['fbUserId'].tolist()
-    pw_df = get_page_views_from_users(user_list)
+    pw_df = get_page_views_from_users(user_list, page_type)
     pw_by_day_df = get_pw_per_day_of_page_view(medium_users_df, pw_df)
+    return pw_by_day_df
+
+
+def get_page_view_num_per_days(pw_by_day_df):
     pw_by_day_list = []
     for i in [1, 3, 7, 14, 21, 28]:
         pw_by_day_list.append(get_pw_metrics_per_day(i, pw_by_day_df))
@@ -56,5 +60,25 @@ def get_pw_stats_by_date_and_medium(start, end, medium):
     return pw_stats_by_day_df
 
 
-app_engagement = get_pw_stats_by_date_and_medium(start=first_of_apr_21, end=first_of_may_21, medium='app')
-imsg_engagement = get_pw_stats_by_date_and_medium(start=first_of_apr_21, end=first_of_may_21, medium='imessage')
+def get_unique_page_views_days_in_first_week(pw_by_day_df):
+    pwFirstWeek = pw_by_day_df[pw_by_day_df['dayOfPageView'] <= 7]
+    numOfUniquePageViewsFirstWeekPerUser = pd.DataFrame(
+        pwFirstWeek.groupby(['fbUserId'])['dayOfPageView'].nunique()).reset_index()
+    return numOfUniquePageViewsFirstWeekPerUser['dayOfPageView'].describe()
+
+
+def get_num_of_pws_per_user(pw_by_day_df):
+    pw_per_user = pd.DataFrame(pw_by_day_df.groupby(['fbUserId'])['count'].count()).reset_index()
+    return pw_per_user['count'].describe()
+
+
+def get_page_view_data(start, end, medium, page_type):
+    pw_by_day_df = get_pw_stats_by_date_and_medium(start, end, medium, page_type)
+    unique_days_pw = get_unique_page_views_days_in_first_week(pw_by_day_df)
+    pw_num_per_days = get_page_view_num_per_days(pw_by_day_df)
+    pw_per_user = get_num_of_pws_per_user(pw_by_day_df)
+    return unique_days_pw, pw_num_per_days, pw_per_user
+
+
+# get_page_view_data(start=first_of_apr_21, end=first_of_may_21, medium='app', page_type='PROPERTY_MORE_DETAILS')
+a, b, c = get_page_view_data(start=first_of_apr_21, end=first_of_may_21, medium='imessage', page_type='comps')
