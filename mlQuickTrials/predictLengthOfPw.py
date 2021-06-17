@@ -40,6 +40,7 @@ def get_user_pws_length(buyer_list):
     print(f'Length of pws df {len(pageViewsDf.index)}')
     pageViewsDf['propertyId'] = pageViewsDf['params'].apply(lambda x: ObjectId(x.get('propertyId')))
     pageViewsDf['duration'] = pageViewsDf['duration'].apply(lambda x: x if x <= 180 else 120)
+    pageViewsDf.rename(columns={'createdAt': 'pageViewCreatedAt'}, inplace=True)
     pageViewsDf.dropna(subset=['duration'], inplace=True)
     return pageViewsDf
 
@@ -128,13 +129,18 @@ def get_property_details_df(property_ids):
             '_id': {'$in': property_ids},
             'category': 'APT_SALE'
         }, {'createdAt': 1, 'ourRank': 1, 'salePrice': 1, 'isRenovated': 1, 'hasNaturalLight': 1, 'numOfBeds': 1,
-            'content': 1,
-            'kitchen': 1, 'bathroom': 1}
+            'content': 1, 'kitchen': 1, 'bathroom': 1}
     ))
     propertyDetailsDf = pd.DataFrame(propertyList)
     propertyDetailsDf = get_features_of_property(propertyDetailsDf)
-    propertyDetailsDf.rename(columns={'_id': 'propertyId'}, inplace=True)
+    propertyDetailsDf.rename(columns={'_id': 'propertyId', 'createdAt': 'propertyCreatedAt'}, inplace=True)
     return propertyDetailsDf
+
+
+def get_time_in_market(merged_df):
+    merged_df['timeOnMarket'] = merged_df.apply(lambda row: row['pageViewCreatedAt'] - row['propertyCreatedAt'], axis=1)
+    merged_df['timeOnMarketInDays'] = merged_df['timeOnMarket'].apply(lambda x: x.days)
+    return merged_df
 
 
 def _get_data_set():
@@ -210,8 +216,9 @@ def train_model(df, threshold):
 
 def main_func():
     df = _get_data_set()
+    df = get_time_in_market(df)
     df = df[['isRenovatedKitchen', 'isOpenKitchen', 'hasBathtub', 'isBathroomRenovated', 'salePriceRatio', 'bedsRatio',
-             'ourRank', 'isRenovated', 'hasNaturalLight', 'duration', 'contentLength']]
+             'ourRank', 'isRenovated', 'hasNaturalLight', 'duration', 'contentLength', 'timeOnMarketInDays']]
     df.describe(percentiles=[.1, .2, .3, .4, .5, .6, .7, .8, .9])
     df.to_pickle('./df.pkl')
     df.dropna(inplace=True)
