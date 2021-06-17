@@ -31,6 +31,7 @@ def get_user_pws_length(buyer_list):
         {
             'pageName': 'PROPERTY_MORE_DETAILS',
             'duration': {'$exists': True},
+            'adminUserId': {'$exists': False},
             'fbUserId': {'$in': buyer_list},
             'params': {'$exists': True},
         }, {'createdAt': 1, 'fbUserId': 1, 'duration': 1, 'params': 1}
