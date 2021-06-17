@@ -7,6 +7,7 @@ import seaborn as sns
 from bson import ObjectId
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score
+
 from constants.lukeFbUserIds import luke_fb_user_ids
 from constants.mongoConnectLuke import fb_users_collection, property_collection, page_view_collection, \
     property_requests_collection, feed_collection
@@ -116,6 +117,7 @@ def get_features_of_property(property_df):
         lambda x: change_yes_no_vars_to_dummy(x.get('hasBathtub')))
     property_df['isBathroomRenovated'] = property_df['bathroom'].apply(
         lambda x: change_yes_no_vars_to_dummy(x.get('isBathroomRenovated')))
+    property_df['contentLength'] = property_df['content'].apply(lambda x: len(x))
     return property_df
 
 
@@ -125,6 +127,7 @@ def get_property_details_df(property_ids):
             '_id': {'$in': property_ids},
             'category': 'APT_SALE'
         }, {'createdAt': 1, 'ourRank': 1, 'salePrice': 1, 'isRenovated': 1, 'hasNaturalLight': 1, 'numOfBeds': 1,
+            'content': 1,
             'kitchen': 1, 'bathroom': 1}
     ))
     propertyDetailsDf = pd.DataFrame(propertyList)
@@ -207,7 +210,7 @@ def train_model(df, threshold):
 def main_func():
     df = _get_data_set()
     df = df[['isRenovatedKitchen', 'isOpenKitchen', 'hasBathtub', 'isBathroomRenovated', 'salePriceRatio', 'bedsRatio',
-             'ourRank', 'isRenovated', 'hasNaturalLight', 'duration']]
+             'ourRank', 'isRenovated', 'hasNaturalLight', 'duration', 'contentLength']]
     df.describe(percentiles=[.1, .2, .3, .4, .5, .6, .7, .8, .9])
     df.to_pickle('./df.pkl')
     df.dropna(inplace=True)
@@ -219,4 +222,6 @@ def main_func():
     results_df = pd.DataFrame(results_df)
     return results_df
 
+
+main_func()
 # todo:  1. first picture room, 2. private outdoor space, 3.beat his average or not
