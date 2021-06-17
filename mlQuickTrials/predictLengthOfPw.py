@@ -69,12 +69,12 @@ def get_feed_to_connect_page_views_with_property_request(buyer_list):
 def get_max_from_from_to_var(from_to_var):
     if pd.isna(from_to_var):
         return None
-    sale_price_to = from_to_var.get('to', False)
-    if sale_price_to:
-        return sale_price_to
-    sale_price_from = from_to_var.get('from', False)
-    if sale_price_from:
-        return sale_price_from
+    var_to = from_to_var.get('to', False)
+    if var_to:
+        return var_to
+    var_from = from_to_var.get('from', False)
+    if var_from:
+        return var_from
     else:
         return None
 
