@@ -1,3 +1,4 @@
+import math
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -106,10 +107,27 @@ def change_yes_no_vars_to_dummy(y_n_var):
         return 0
 
 
+def get_lat_lon_x_y_z(location):
+    lon = location.get('coordinates')[0]
+    lat = location.get('coordinates')[1]
+    x = math.cos(lat) * math.cos(lon)
+    y = math.cos(lat) * math.sin(lon),
+    z = math.sin(lat)
+    return {'x_loc': x, 'y_loc': y, 'z_loc': z}
+
+
+def get_lat_long_features(property_df):
+    property_df['locationsCoords'] = property_df['location'].apply(lambda x: get_lat_lon_x_y_z(x))
+    property_df['x_loc'] = property_df['locationsCoords'].apply(lambda x: x.get('x_loc'))
+    property_df['y_loc'] = property_df['locationsCoords'].apply(lambda x: x.get('y_loc'))
+    property_df['z_loc'] = property_df['locationsCoords'].apply(lambda x: x.get('z_loc'))
+
+
 def get_features_of_property(property_df):
     property_df['isRenovated'] = property_df['isRenovated'].apply(lambda x: change_yes_no_vars_to_dummy(x))
     property_df['hasNaturalLight'] = property_df['hasNaturalLight'].apply(
         lambda x: change_yes_no_vars_to_dummy(x))
+    property_df['numOfPhotos'] = property_df['photosObj'].apply(lambda x: len(x))
     property_df['ourRank'] = property_df['ourRank'].fillna(value=3)
     property_df['isOpenKitchen'] = property_df['kitchen'].apply(
         lambda x: change_yes_no_vars_to_dummy(x.get('isOpenKitchen')))
@@ -120,6 +138,7 @@ def get_features_of_property(property_df):
     property_df['isBathroomRenovated'] = property_df['bathroom'].apply(
         lambda x: change_yes_no_vars_to_dummy(x.get('isBathroomRenovated')))
     property_df['contentLength'] = property_df['content'].apply(lambda x: len(x))
+    get_lat_long_features(property_df)
     return property_df
 
 
@@ -129,7 +148,7 @@ def get_property_details_df(property_ids):
             '_id': {'$in': property_ids},
             'category': 'APT_SALE'
         }, {'createdAt': 1, 'ourRank': 1, 'salePrice': 1, 'isRenovated': 1, 'hasNaturalLight': 1, 'numOfBeds': 1,
-            'content': 1, 'kitchen': 1, 'bathroom': 1}
+            'content': 1, 'kitchen': 1, 'bathroom': 1, 'photosObj': 1, 'location': 1}
     ))
     propertyDetailsDf = pd.DataFrame(propertyList)
     propertyDetailsDf = get_features_of_property(propertyDetailsDf)
@@ -208,7 +227,7 @@ def train_model(df, threshold):
     plt.bar(range(X_train.shape[1]), importances[indices])
     plt.gcf().set_size_inches(20, 8)
     # Add feature names as x-axis labels
-    plt.xticks(range(X_train.shape[1]), names, rotation=90)
+    plt.xticks(range(X_train.shape[1]), names, rotation=45)
     # Show plot
     plt.show()
     return {'score': threshold, 'acc': acc, 'precision': precision, 'recall': recall}
@@ -218,7 +237,8 @@ def main_func():
     df = _get_data_set()
     df = get_time_in_market(df)
     df = df[['isRenovatedKitchen', 'isOpenKitchen', 'hasBathtub', 'isBathroomRenovated', 'salePriceRatio', 'bedsRatio',
-             'ourRank', 'isRenovated', 'hasNaturalLight', 'duration', 'contentLength', 'timeOnMarketInDays']]
+             'ourRank', 'isRenovated', 'hasNaturalLight', 'duration', 'contentLength', 'timeOnMarketInDays',
+             'numOfPhotos', 'x_loc', 'z_loc', 'y_loc']]
     df.describe(percentiles=[.1, .2, .3, .4, .5, .6, .7, .8, .9])
     df.to_pickle('./df.pkl')
     df.dropna(inplace=True)

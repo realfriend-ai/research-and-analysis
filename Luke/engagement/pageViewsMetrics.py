@@ -81,4 +81,4 @@ def get_page_view_data(start, end, medium, page_type):
 
 
 # get_page_view_data(start=first_of_apr_21, end=first_of_may_21, medium='app', page_type='PROPERTY_MORE_DETAILS')
-a, b, c = get_page_view_data(start=first_of_apr_21, end=first_of_may_21, medium='imessage', page_type='comps')
+# a, b, c = get_page_view_data(start=first_of_apr_21, end=first_of_may_21, medium='imessage', page_type='comps')
