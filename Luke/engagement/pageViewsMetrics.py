@@ -9,7 +9,8 @@ def get_page_views_from_users(buyer_user_list, page_type):
     pageViewsList = list(page_view_collection.find(
         {
             'fbUserId': {'$in': buyer_user_list},
-            'pageName': page_type
+            'pageName': page_type,
+            'adminUserId': {'$exists': False},
         }, {'createdAt': 1, 'fbUserId': 1, 'duration': 1}
     ))
     pageViewsDf = pd.DataFrame(pageViewsList)
@@ -83,5 +84,4 @@ def get_page_view_data(start, end, medium, page_type, only_user_sent_lead):
     return unique_days_pw, pw_num_per_days, pw_per_user
 
 
-unique_days_pw, pw_num_per_days, pw_per_user = get_page_view_data(
-    start=first_of_mar_21, end=first_of_may_21, medium='app', page_type='AppHomeScreen', only_user_sent_lead=True)
+# For Analysis Buttons in App I used SAVED, FEED, AppHomeScreen
