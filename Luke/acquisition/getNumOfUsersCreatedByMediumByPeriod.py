@@ -1,10 +1,11 @@
 import pandas as pd
+from bson import ObjectId
 
 from Luke.acquisition.getFbUserIdsWeShouldIgnore import get_user_we_should_ignore_when_counting
 from Luke.acquisition.getGroupesToIgnore import find_groups_with_user_created_between_date_and_user_member_before, \
     groups_created_between_dates
 from constants.lukeFbUserIds import luke_fb_user_ids
-from constants.mongoConnectLuke import fb_users_collection
+from constants.mongoConnectLuke import fb_users_collection, lead_collection
 
 
 def get_preferred_medium_by_user_cleaning_groups(mediums):
@@ -24,7 +25,20 @@ def remove_fb_user_we_should_ignore_on_counting(start, end, fbUserDf):
     return fbUserDf
 
 
-def get_users_created_by_medium_and_date(start, end, only_user_did_pw, for_action):
+def get_only_user_who_sent_lead(fbUserDf):
+    user_ids = fbUserDf['fbUserId'].tolist()
+    user_ids_str = list(map(lambda x: str(x), user_ids))
+    query = {
+        'fbUserId': {'$in': user_ids_str},
+    }
+    fbUserSentLead = list(lead_collection.find(query, {'fbUserId': 1}))
+    fbUserIdsSentLead = list(map(lambda x: ObjectId(x.get('fbUserId')), fbUserSentLead))
+    fbUserDf['shouldKeepUser'] = fbUserDf['fbUserId'].apply(lambda x: True if x in fbUserIdsSentLead else False)
+    fbUserDf = fbUserDf[fbUserDf['shouldKeepUser']]
+    return fbUserDf
+
+
+def get_users_created_by_medium_and_date(start, end, only_user_did_pw, only_user_sent_lead, for_action):
     """Summary: get users created by medium between dates
 
      Parameters:
@@ -52,8 +66,8 @@ def get_users_created_by_medium_and_date(start, end, only_user_did_pw, for_actio
         fbUserDf = remove_fb_user_we_should_ignore_on_counting(start, end, fbUserDf)
     fbUserDf['preferredMedium'] = fbUserDf['mediums'].apply(lambda x: get_preferred_medium_by_user_cleaning_groups(x))
     print(fbUserDf['preferredMedium'].value_counts())
-    fbUserDf.to_clipboard()
+    if only_user_sent_lead:
+        fbUserDf = get_only_user_who_sent_lead(fbUserDf)
     return fbUserDf
-
 
 # get_users_created_by_medium_and_date(datetime(2021, 5, 1), datetime.now(), True, False)
