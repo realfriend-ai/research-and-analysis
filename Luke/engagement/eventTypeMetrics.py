@@ -26,8 +26,8 @@ def get_event_per_day_in_service(fb_user_df, event_df):
     return merged_df
 
 
-def get_events_metrics_per_day(day, event_df_by_day_in_service):
-    event_df_by_day_in_service_temp = event_df_by_day_in_service[event_df_by_day_in_service['dayOfEvent'] <= day]
+def get_events_metrics_per_day(day, event_df_by_day_in_service, prev_day):
+    event_df_by_day_in_service_temp = event_df_by_day_in_service[(event_df_by_day_in_service['dayOfEvent'] <= day) & (event_df_by_day_in_service['dayOfEvent'] > prev_day)]
     event_df_by_day_in_service_grouped = pd.DataFrame(
         event_df_by_day_in_service_temp.groupby(['fbUserId'])['count'].count()).reset_index()
     return {'day': day, 'numOfUserDidEvent': event_df_by_day_in_service_grouped['fbUserId'].nunique(),
@@ -37,9 +37,11 @@ def get_events_metrics_per_day(day, event_df_by_day_in_service):
 
 def get_events_num_per_days(events_df_by_day_in_service):
     event_by_day_list = []
+    prev_day = 0
     for i in [1, 3, 7, 14, 21, 28]:
-        event_by_day_list.append(get_events_metrics_per_day(i, events_df_by_day_in_service))
-        events_stats_by_day_df = pd.DataFrame(event_by_day_list)
+        event_by_day_list.append(get_events_metrics_per_day(i, events_df_by_day_in_service, prev_day))
+        prev_day = i
+    events_stats_by_day_df = pd.DataFrame(event_by_day_list)
     return events_stats_by_day_df
 
 

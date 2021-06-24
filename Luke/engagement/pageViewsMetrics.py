@@ -27,9 +27,9 @@ def get_pw_per_day_of_page_view(fb_user_df, pw_df):
     return merged_df
 
 
-def get_pw_metrics_per_day(day, pw_df_by_day_df):
+def get_pw_metrics_per_day(day, pw_df_by_day_df, prev_day):
     pw_df_by_day_df_temp = pw_df_by_day_df[
-        (pw_df_by_day_df['dayOfPageView'] <= day) & (pw_df_by_day_df['dayOfPageView'] > day - 7)]
+        (pw_df_by_day_df['dayOfPageView'] <= day) & (pw_df_by_day_df['dayOfPageView'] > prev_day)]
     pw_df_by_day_df_grouped = pd.DataFrame(pw_df_by_day_df_temp.groupby(['fbUserId'])['count'].count()).reset_index()
     return {'day': day, 'numOfUserDidPw': pw_df_by_day_df_grouped['fbUserId'].nunique(),
             'meanPageViews': pw_df_by_day_df_grouped['count'].mean(),
@@ -58,9 +58,11 @@ def get_pw_stats_by_date_and_medium(start, end, medium, page_type, only_user_sen
 
 def get_page_view_num_per_days(pw_by_day_df):
     pw_by_day_list = []
+    prev_day = 0
     for i in [1, 3, 7, 14, 21, 28]:
-        pw_by_day_list.append(get_pw_metrics_per_day(i, pw_by_day_df))
-        pw_stats_by_day_df = pd.DataFrame(pw_by_day_list)
+        pw_by_day_list.append(get_pw_metrics_per_day(i, pw_by_day_df, prev_day))
+        prev_day = i
+    pw_stats_by_day_df = pd.DataFrame(pw_by_day_list)
     return pw_stats_by_day_df
 
 
@@ -84,4 +86,11 @@ def get_page_view_data(start, end, medium, page_type, only_user_sent_lead):
     return unique_days_pw, pw_num_per_days, pw_per_user
 
 
+app_unique_days_pw, app_pw_num_per_days, app_pw_per_user = get_page_view_data(start=first_of_mar_21,
+                                                                              end=first_of_may_21, medium='app',
+                                                                              page_type='AppHomeScreen',
+                                                                              only_user_sent_lead=False)
+# imsg_unique_days_pw, imsg_pw_num_per_days, imsg_pw_per_user = get_page_view_data(start=first_of_mar_21,
+#                                                                                  end=first_of_may_21, medium='imessage',                                                               page_type='PROPERTY_MORE_DETAILS',
+#                                                                                  only_user_sent_lead=False)
 # For Analysis Buttons in App I used SAVED, FEED, AppHomeScreen
