@@ -36,7 +36,7 @@ def find_members_with_different_initial_medium_than_group(groups_df, medium):
     members_fb_user_df = pd.DataFrame(
         list(fb_users_collection.find({'_id': {'$in': members_ids_flatten}}, {'tags': 1})))
     members_fb_user_df['isInitialMediumDiffThanGiven'] = members_fb_user_df['tags'].apply(
-        lambda x: is_have_initial_medium_tag_different_than_medium(tags=x, medium=medium))
+        lambda tags: is_have_initial_medium_tag_different_than_medium(tags=tags, medium=medium))
     members_fb_user_df = members_fb_user_df[members_fb_user_df['isInitialMediumDiffThanGiven']]
     return members_fb_user_df['_id'].tolist()
 
@@ -60,9 +60,17 @@ def find_groups_contains_users_created_in_different_medium(start, end, medium):
     return groups_df_should_ignore['fbUserId'].tolist()
 
 
-def get_fbUser_df_without_groups_with_member_in_different_medium(fb_user_df, start, end, medium):
+def get_fbUser_df_without_groups_with_member_from_different_medium(fb_user_df, start, end, medium):
+    """Summary: remove groups that belong to medium that has memebers created in another medium
+
+    Parameters:
+         fb_user_df: pd.DataFrame of fbUsers we would like to subset without members created in a different medium
+         start (date): the beginning date -  we want to find user created after
+         end (date): the final date - we want to find users created before
+
+     """
     list_of_groups_we_should_ignore = find_groups_contains_users_created_in_different_medium(start, end, medium)
     fb_user_df['isFbUserIdShouldBeIgnored'] = fb_user_df['fbUserId'].apply(
-        lambda x: True if x in list_of_groups_we_should_ignore else False)
+        lambda user_id: True if user_id in list_of_groups_we_should_ignore else False)
     fb_user_df = fb_user_df[fb_user_df['isFbUserIdShouldBeIgnored'] == False]
     return fb_user_df
