@@ -38,7 +38,7 @@ def get_only_user_who_sent_lead(fbUserDf):
     return fbUserDf
 
 
-def get_users_created_by_medium_and_date(start, end, only_user_did_pw, only_user_sent_lead, for_action):
+def get_users_created_by_medium_and_date(start, end, medium, only_user_did_pw, only_user_sent_lead, for_action):
     """Summary: get users created by medium between dates
 
      Parameters:
@@ -48,9 +48,13 @@ def get_users_created_by_medium_and_date(start, end, only_user_did_pw, only_user
 
      """
     groups_ids_we_should_ignore = find_groups_with_user_created_between_date_and_user_member_before(start, end)
+    if medium == 'app':
+        nonDesiredTags = ['ADMIN', 'INITIAL_MEDIUM_IMESSAGE']
+    elif medium == 'imessage':
+        nonDesiredTags = ['ADMIN', 'INITIAL_MEDIUM_APP']
     query = {
         'isAgent': {'$ne': True},
-        'tags': {'$ne': 'ADMIN'},
+        'tags': {'$nin': nonDesiredTags},
         'requestsKind': 'APT_SALE',
         '_id': {'$nin': luke_fb_user_ids + groups_ids_we_should_ignore},
         'createdAt': {'$gte': start, '$lte': end},
@@ -65,9 +69,7 @@ def get_users_created_by_medium_and_date(start, end, only_user_did_pw, only_user
     if for_action is not True:
         fbUserDf = remove_fb_user_we_should_ignore_on_counting(start, end, fbUserDf)
     fbUserDf['preferredMedium'] = fbUserDf['mediums'].apply(lambda x: get_preferred_medium_by_user_cleaning_groups(x))
-    print(fbUserDf['preferredMedium'].value_counts())
+    fbUserDf = fbUserDf[fbUserDf['preferredMedium'] == medium]
     if only_user_sent_lead:
         fbUserDf = get_only_user_who_sent_lead(fbUserDf)
     return fbUserDf
-
-# get_users_created_by_medium_and_date(datetime(2021, 5, 1), datetime.now(), True, False)

@@ -25,3 +25,4 @@ def get_user_we_should_ignore_when_counting(groups_df, fb_users_df):
     groups_df.rename(columns={'createdAt': 'groupCreatedAt', 'fbUserId': 'groupFbUeserId'}, inplace=True)
     duplicates_df = pd.merge(fb_users_df, groups_df, how='inner', left_on='fbUserId', right_on='memberInUserList')
     return duplicates_df['fbUserId'].tolist()
+

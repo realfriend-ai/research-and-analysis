@@ -73,7 +73,7 @@ def get_webhooks_df():
     whatsappMessagesList = list(tyntec_webhooks.find({
         'createdAt': {'$gte': last_week},
         'content': {'$exists': True}
-    }, {'from': 1, 'to': 1, 'createdAt': 1, 'content': 1, 'intents': 1, 'entities': 1}).limit(10000))
+    }, {'from': 1, 'to': 1, 'createdAt': 1, 'content': 1, 'intents': 1, 'entities': 1}))
     whatsappMessagesDf = pd.DataFrame(whatsappMessagesList)
     whatsappMessagesDf['isByUs'] = whatsappMessagesDf.apply(lambda webhook: isByUs(webhook), axis=1)
     whatsappMessagesDf['userPhoneNumber'] = whatsappMessagesDf.apply(lambda webhook: get_unique_user_phone(webhook),
@@ -95,7 +95,9 @@ def get_webhooks_df():
 def main_func():
     output = get_webhooks_df()
     total_messages_sent = output.get('messagesDf')
+    print(f'Num of message looked into {len(total_messages_sent.index)}')
     userMessagesSent = output.get('userSendingMessagesDf')
+    print(f'Num of user message looked into {len(userMessagesSent.index)}')
     print(userMessagesSent['foundIntents'].value_counts(normalize=True))
     print(userMessagesSent['foundEntities'].value_counts(normalize=True))
     print(userMessagesSent['isIntentRelatedToRequest'].value_counts(normalize=True))
