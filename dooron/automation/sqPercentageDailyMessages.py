@@ -15,6 +15,9 @@ def get_is_by_us_whatsapp(row):
 
 def find_sq_answers(text):
     words_sq = ['לא', 'בסדר', 'אחלה', 'מעולה', 'אוקי', 'אין בעיה', 'סבבה', 'כן']
+    wrds_to_replace = ['.', '/', ',']
+    for rep_wrd in wrds_to_replace:
+        text = text.replace(rep_wrd, '')
     if len(text.split()) < 2:
         for wrd in words_sq:
             if wrd in text:
@@ -32,8 +35,7 @@ def main_func():
     merged_df['isTextContainSq'] = merged_df['text'].apply(lambda x: find_sq_answers(x))
     return merged_df[['text', 'isTextContainSq']]
 
-
-merged_df = main_func()
-print(merged_df['isTextContainSq'].value_counts())
-print(merged_df['isTextContainSq'].value_counts(normalize=True))
-
+# merged_df = main_func()
+# print(merged_df['isTextContainSq'].value_counts())
+# print(merged_df['isTextContainSq'].value_counts(normalize=True))
+#
