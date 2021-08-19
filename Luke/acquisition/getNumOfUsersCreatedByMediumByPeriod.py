@@ -4,7 +4,7 @@ from bson import ObjectId
 from Luke.acquisition.getFbUserIdsWeShouldIgnore import get_user_we_should_ignore_when_counting
 from Luke.acquisition.getGroupesToIgnore import find_groups_with_user_created_between_date_and_user_member_before, \
     groups_created_between_dates
-from constants.lukeFbUserIds import luke_fb_user_ids
+from constants.lukeFbUserIds import luke_fb_user_ids, bug_users_ids
 from constants.mongoConnectLuke import fb_users_collection, lead_collection
 
 
@@ -54,7 +54,7 @@ def get_users_created_by_medium_and_date(start, end, medium, only_user_did_pw, o
         'isAgent': {'$ne': True},
         'tags': {'$ne': 'ADMIN'},
         'requestsKind': 'APT_SALE',
-        '_id': {'$nin': luke_fb_user_ids + groups_ids_with_member_created_before_start_date},
+        '_id': {'$nin': luke_fb_user_ids + groups_ids_with_member_created_before_start_date + bug_users_ids},
         'createdAt': {'$gte': start, '$lte': end},
     }
     projection = {'_id': 1, 'createdAt': 1, 'mediums': 1, 'requestsKind': 1, 'initialRequest': 1, 'tags': 1}
@@ -71,4 +71,4 @@ def get_users_created_by_medium_and_date(start, end, medium, only_user_did_pw, o
     fbUserDf = fbUserDf[fbUserDf['preferredMedium'] == medium]
     if only_user_sent_lead:
         fbUserDf = get_only_user_who_sent_lead(fbUserDf)
-    return fbUserDf
+    return fbUserDf.reset_index()

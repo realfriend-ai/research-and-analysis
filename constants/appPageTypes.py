@@ -3,3 +3,4 @@ appPageViewTypesForResearch = {
     'SAVED': 'SAVED',
     'FEED': 'FEED'
 }
+

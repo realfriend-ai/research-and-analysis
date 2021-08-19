@@ -85,12 +85,3 @@ def get_page_view_data(start, end, medium, page_type, only_user_sent_lead):
     pw_per_user = get_num_of_pws_per_user(pw_by_day_df)
     return unique_days_pw, pw_num_per_days, pw_per_user
 
-
-app_unique_days_pw, app_pw_num_per_days, app_pw_per_user = get_page_view_data(start=first_of_mar_21,
-                                                                              end=first_of_may_21, medium='app',
-                                                                              page_type='AppHomeScreen',
-                                                                              only_user_sent_lead=False)
-# imsg_unique_days_pw, imsg_pw_num_per_days, imsg_pw_per_user = get_page_view_data(start=first_of_mar_21,
-#                                                                                  end=first_of_may_21, medium='imessage',                                                               page_type='PROPERTY_MORE_DETAILS',
-#                                                                                  only_user_sent_lead=False)
-# For Analysis Buttons in App I used SAVED, FEED, AppHomeScreen
