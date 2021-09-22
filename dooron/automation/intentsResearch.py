@@ -108,4 +108,4 @@ def main_func():
     return userMessagesSentWithRequests
 
 
-user_msg_with_req = main_func()
+# user_msg_with_req = main_func()

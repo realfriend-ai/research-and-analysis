@@ -153,20 +153,7 @@ def get_last_message_before_ticket(row, whatsapp_df):
     return None
 
 
-def get_intents_and_fill_na(row):
-    intents_before = row.get('intentsBefore')
-    if type(intents_before) == list:
-        if len(intents_before) > 0:
-            if intersection(intents_before, set_request_related):
-                return 'SET_REQUEST_RELATED'
-            else:
-                return intents_before
-        else:
-            return 'NO_INTENT'
-    elif find_sq_answers(row.get('textBefore')):
-        return 'SQ'
-    else:
-        return 'NO_INTENT'
+
 
 
 def get_tickets_df_with_intent_before(ticket_df):
