@@ -31,7 +31,7 @@ def intersection(list1, list2):
     return False
 
 
-def get_intents_and_fill_na(row):
+def get_intents_and_fill_na_dooron(row):
     intents_before = row.get('intentsBefore')
     if type(intents_before) == list:
         if len(intents_before) > 0:
