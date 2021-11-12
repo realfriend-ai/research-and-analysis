@@ -14,6 +14,7 @@ first_of_jan_21 = datetime(2021, 1, 1)
 first_of_dec = datetime(2020, 12, 1)
 
 first_of_nov = datetime(2020, 11, 1)
+dsd
 first_of_oct = datetime(2020, 10, 1)
 first_of_sep = datetime(2020, 9, 1)
 first_of_aug = datetime(2020, 8, 1)
